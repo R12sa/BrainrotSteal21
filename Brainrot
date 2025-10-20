@@ -1,12 +1,11 @@
--- Load Almighty UI
-local Almighty = loadstring(game:HttpGet("https://pastefy.app/PHJpZltN/raw"))()
-
--- Services
+-- Lennon Hub Style GUI with Toggles
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
 -- Toggle states
 local toggleStates = {
@@ -15,184 +14,260 @@ local toggleStates = {
     tween = false
 }
 
--- Create main window with better styling
-local Window = Almighty:CreateWindow({
-    Title = "ttk- sabtrader1103",
-    Theme = "Dark", -- If supported
-    Size = {200, 220}
-})
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LennonHub"
+screenGui.Parent = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local MainTab = Window:CreateTab("Main")
+-- Main Frame (more transparent)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 200, 0, 220)
+mainFrame.Position = UDim2.new(0.5, -100, 0.5, -110)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
 
--- Desync functionality
-local desyncConnection = nil
-local function enableDesync()
-    local success, error = pcall(function()
-        local backpack = LocalPlayer:WaitForChild("Backpack")
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = character:WaitForChild("Humanoid")
-        
-        local packages = ReplicatedStorage:WaitForChild("Packages", 5)
-        if not packages then warn("Packages not found") return false end
-        
-        local netFolder = packages:WaitForChild("Net", 5)
-        if not netFolder then warn("Net folder not found") return false end
-        
-        local useItemRemote = netFolder:WaitForChild("RE/UseItem", 5)
-        local teleportRemote = netFolder:WaitForChild("RE/QuantumCloner/OnTeleport", 5)
-        if not useItemRemote or not teleportRemote then warn("Remotes not found") return false end
-        
-        local toolNames = {"Quantum Cloner", "Brainrot", "brainrot"}
-        local tool
-        
-        for _, toolName in ipairs(toolNames) do
-            tool = backpack:FindFirstChild(toolName) or character:FindFirstChild(toolName)
-            if tool then break end
+-- Add corner radius
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 8)
+mainCorner.Parent = mainFrame
+
+-- Add border/stroke effect
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 255, 0)
+stroke.Thickness = 2
+stroke.Transparency = 0.2
+stroke.Parent = mainFrame
+
+-- Title Frame (more transparent)
+local titleFrame = Instance.new("Frame")
+titleFrame.Name = "TitleFrame"
+titleFrame.Size = UDim2.new(1, 0, 0, 40)
+titleFrame.Position = UDim2.new(0, 0, 0, 0)
+titleFrame.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+titleFrame.BackgroundTransparency = 0.2
+titleFrame.BorderSizePixel = 0
+titleFrame.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleFrame
+
+-- Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "ttk- sabtrader1103"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = titleFrame
+
+-- Buttons Container
+local buttonsFrame = Instance.new("Frame")
+buttonsFrame.Name = "ButtonsFrame"
+buttonsFrame.Size = UDim2.new(1, -20, 1, -60)
+buttonsFrame.Position = UDim2.new(0, 10, 0, 50)
+buttonsFrame.BackgroundTransparency = 1
+buttonsFrame.Parent = mainFrame
+
+-- Toggle button creation function
+local function createToggleButton(text, position, toggleKey, callback)
+    local button = Instance.new("TextButton")
+    button.Name = text .. "Button"
+    button.Size = UDim2.new(1, 0, 0, 35)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    button.BackgroundTransparency = 0.4
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.Font = Enum.Font.Gotham
+    button.Parent = buttonsFrame
+    
+    -- Button corner
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
+    
+    -- Button stroke
+    local buttonStroke = Instance.new("UIStroke")
+    buttonStroke.Color = Color3.fromRGB(0, 200, 0)
+    buttonStroke.Thickness = 1
+    buttonStroke.Transparency = 0.3
+    buttonStroke.Parent = button
+    
+    -- Update button appearance based on toggle state
+    local function updateButtonAppearance()
+        if toggleStates[toggleKey] then
+            button.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+            button.BackgroundTransparency = 0.2
+            buttonStroke.Color = Color3.fromRGB(0, 255, 0)
+            buttonStroke.Transparency = 0.1
+        else
+            button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            button.BackgroundTransparency = 0.4
+            buttonStroke.Color = Color3.fromRGB(0, 200, 0)
+            buttonStroke.Transparency = 0.3
         end
-        
-        if not tool then
-            for _, item in ipairs(backpack:GetChildren()) do
-                if item:IsA("Tool") then tool=item break end
-            end
+    end
+    
+    -- Hover effects
+    button.MouseEnter:Connect(function()
+        if not toggleStates[toggleKey] then
+            local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundTransparency = 0.2})
+            tween:Play()
         end
-        
-        if tool and tool.Parent==backpack then
-            humanoid:EquipTool(tool)
-            task.wait(0.5)
-        end
-        
-        if setfflag then setfflag("WorldStepMax", "-9999999999") end
-        task.wait(0.2)
-        
-        useItemRemote:FireServer()
-        task.wait(1)
-        
-        teleportRemote:FireServer()
-        task.wait(2)
-        
-        if setfflag then setfflag("WorldStepMax", "-1") end
-        return true
     end)
     
-    if not success then
-        warn("Error activating desync: " .. tostring(error))
-        return false
-    end
-    return success
+    button.MouseLeave:Connect(function()
+        if not toggleStates[toggleKey] then
+            local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundTransparency = 0.4})
+            tween:Play()
+        end
+    end)
+    
+    -- Click effect and toggle
+    button.MouseButton1Click:Connect(function()
+        toggleStates[toggleKey] = not toggleStates[toggleKey]
+        updateButtonAppearance()
+        
+        local tween = TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.1})
+        tween:Play()
+        task.wait(0.1)
+        updateButtonAppearance()
+        
+        if callback then
+            callback(toggleStates[toggleKey])
+        end
+    end)
+    
+    updateButtonAppearance()
+    return button
 end
 
-local function disableDesync()
-    if desyncConnection then
-        desyncConnection:Disconnect()
-        desyncConnection = nil
-    end
-    if setfflag then 
-        setfflag("WorldStepMax", "-1") 
-    end
-    print("Desync disabled")
-end
-
--- Help tools functionality
-local helpToolsConnection = nil
-local function enableHelpTools()
-    -- Add your help tools code here
-    print("Help tools enabled")
-    -- Example: ESP, aimbot, etc.
-end
-
-local function disableHelpTools()
-    if helpToolsConnection then
-        helpToolsConnection:Disconnect()
-        helpToolsConnection = nil
-    end
-    print("Help tools disabled")
-end
-
--- Tween functionality
-local tweenConnection = nil
-local function enableTween()
-    -- Add your tween/teleport code here
-    print("Tween enabled")
-    -- Example: click teleport, speed boost, etc.
-end
-
-local function disableTween()
-    if tweenConnection then
-        tweenConnection:Disconnect()
-        tweenConnection = nil
-    end
-    print("Tween disabled")
-end
-
--- Create toggle buttons
-MainTab:CreateToggle("Desync", false, function(enabled)
-    toggleStates.desync = enabled
+-- Create toggle buttons with your original functionality
+createToggleButton("Desync", UDim2.new(0, 0, 0, 0), "desync", function(enabled)
     if enabled then
-        local success = enableDesync()
+        -- Your desync code here
+        local LocalPlayer = Players.LocalPlayer
+        local function enableMobileDesync()
+            local success, error = pcall(function()
+                local backpack = LocalPlayer:WaitForChild("Backpack")
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local humanoid = character:WaitForChild("Humanoid")
+                
+                local packages = ReplicatedStorage:WaitForChild("Packages", 5)
+                if not packages then warn("Packages not found") return false end
+                
+                local netFolder = packages:WaitForChild("Net", 5)
+                if not netFolder then warn("Net folder not found") return false end
+                
+                local useItemRemote = netFolder:WaitForChild("RE/UseItem", 5)
+                local teleportRemote = netFolder:WaitForChild("RE/QuantumCloner/OnTeleport", 5)
+                if not useItemRemote or not teleportRemote then warn("Remotes not found") return false end
+                
+                local toolNames = {"Quantum Cloner", "Brainrot", "brainrot"}
+                local tool
+                
+                for _, toolName in ipairs(toolNames) do
+                    tool = backpack:FindFirstChild(toolName) or character:FindFirstChild(toolName)
+                    if tool then break end
+                end
+                
+                if not tool then
+                    for _, item in ipairs(backpack:GetChildren()) do
+                        if item:IsA("Tool") then tool=item break end
+                    end
+                end
+                
+                if tool and tool.Parent==backpack then
+                    humanoid:EquipTool(tool)
+                    task.wait(0.5)
+                end
+                
+                if setfflag then setfflag("WorldStepMax", "-9999999999") end
+                task.wait(0.2)
+                
+                useItemRemote:FireServer()
+                task.wait(1)
+                
+                teleportRemote:FireServer()
+                task.wait(2)
+                
+                if setfflag then setfflag("WorldStepMax", "-1") end
+                return true
+            end)
+            
+            if not success then
+                warn("Error activating desync: " .. tostring(error))
+                return false
+            end
+            return success
+        end
+        
+        local success = enableMobileDesync()
         if success then
-            print("✅ Desync activated!")
+            print("Desync activated!")
         else
-            print("❌ Desync failed - check console")
-            toggleStates.desync = false
+            print("Desync failed - check console for errors")
         end
     else
-        disableDesync()
-        print("🔴 Desync deactivated!")
+        print("Desync deactivated!")
+        -- Add desync disable code here if needed
     end
 end)
 
-MainTab:CreateToggle("Help Tools", false, function(enabled)
-    toggleStates.helpTools = enabled
+createToggleButton("Help tools", UDim2.new(0, 0, 0, 45), "helpTools", function(enabled)
     if enabled then
-        enableHelpTools()
-        print("✅ Help tools activated!")
+        print("Help tools activated!")
+        -- Add your help tools functionality here
     else
-        disableHelpTools()
-        print("🔴 Help tools deactivated!")
+        print("Help tools deactivated!")
+        -- Add help tools disable code here
     end
 end)
 
-MainTab:CreateToggle("Tween (might not work)", false, function(enabled)
-    toggleStates.tween = enabled
+createToggleButton("Tween (might not work)", UDim2.new(0, 0, 0, 90), "tween", function(enabled)
     if enabled then
-        enableTween()
-        print("✅ Tween activated!")
+        print("Tween activated!")
+        -- Add your tween functionality here
     else
-        disableTween()
-        print("🔴 Tween deactivated!")
+        print("Tween deactivated!")
+        -- Add tween disable code here
     end
 end)
 
--- Add separator
-MainTab:CreateLabel("─────────────────")
+-- Make GUI draggable
+local dragging = false
+local dragStart = nil
+local startPos = nil
 
--- Add status display
-MainTab:CreateLabel("Status: Ready")
-
--- Auto-cleanup on character respawn
-LocalPlayer.CharacterAdded:Connect(function()
-    -- Reset all toggles on respawn
-    toggleStates.desync = false
-    toggleStates.helpTools = false
-    toggleStates.tween = false
-    
-    -- Disconnect all connections
-    disableDesync()
-    disableHelpTools()
-    disableTween()
-    
-    print("🔄 Character respawned - all features reset")
-end)
-
--- Cleanup on script end
-game:GetService("Players").PlayerRemoving:Connect(function(player)
-    if player == LocalPlayer then
-        disableDesync()
-        disableHelpTools()
-        disableTween()
+titleFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
     end
 end)
 
-print("🚀 Enhanced GUI loaded successfully!")
-print("📋 Features: Desync, Help Tools, Tween")
-print("🎮 All features have proper toggle functionality")
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+print("Lennon Hub Style GUI with Toggles loaded!")
