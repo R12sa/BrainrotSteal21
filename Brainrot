@@ -1,17 +1,127 @@
--- Load Almighty UI
-local Almighty = loadstring(game:HttpGet("https://pastefy.app/PHJpZltN/raw"))()
+-- Lennon Hub Style GUI
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Create main window
-local Window = Almighty:CreateWindow({Title = "in progress"})
-local MainTab = Window:CreateTab("Main")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Add buttons
-MainTab:CreateButton("Desync", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local LocalPlayer = Players.LocalPlayer
-    local desyncActive = false
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LennonHub"
+screenGui.Parent = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 200, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- Add corner radius
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 8)
+mainCorner.Parent = mainFrame
+
+-- Add border/stroke effect
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 255, 0)
+stroke.Thickness = 2
+stroke.Parent = mainFrame
+
+-- Title Frame
+local titleFrame = Instance.new("Frame")
+titleFrame.Name = "TitleFrame"
+titleFrame.Size = UDim2.new(1, 0, 0, 40)
+titleFrame.Position = UDim2.new(0, 0, 0, 0)
+titleFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+titleFrame.BorderSizePixel = 0
+titleFrame.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleFrame
+
+-- Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "11k+ SierraTheGoat5"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextScaled = true
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.Parent = titleFrame
+
+-- Buttons Container
+local buttonsFrame = Instance.new("Frame")
+buttonsFrame.Name = "ButtonsFrame"
+buttonsFrame.Size = UDim2.new(1, -20, 1, -60)
+buttonsFrame.Position = UDim2.new(0, 10, 0, 50)
+buttonsFrame.BackgroundTransparency = 1
+buttonsFrame.Parent = mainFrame
+
+-- Button creation function
+local function createButton(text, position, callback)
+    local button = Instance.new("TextButton")
+    button.Name = text .. "Button"
+    button.Size = UDim2.new(1, 0, 0, 35)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.Font = Enum.Font.Gotham
+    button.Parent = buttonsFrame
     
+    -- Button corner
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.Parent = button
+    
+    -- Button stroke
+    local buttonStroke = Instance.new("UIStroke")
+    buttonStroke.Color = Color3.fromRGB(0, 200, 0)
+    buttonStroke.Thickness = 1
+    buttonStroke.Parent = button
+    
+    -- Hover effects
+    button.MouseEnter:Connect(function()
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)})
+        tween:Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        local tween = TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+        tween:Play()
+    end)
+    
+    -- Click effect
+    button.MouseButton1Click:Connect(function()
+        local tween = TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(0, 150, 0)})
+        tween:Play()
+        task.wait(0.1)
+        local tween2 = TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)})
+        tween2:Play()
+        
+        if callback then
+            callback()
+        end
+    end)
+    
+    return button
+end
+
+-- Create buttons with your functionality
+createButton("DESYNC", UDim2.new(0, 0, 0, 0), function()
+    -- Your desync code here
+    local LocalPlayer = Players.LocalPlayer
     local function enableMobileDesync()
         local success, error = pcall(function()
             local backpack = LocalPlayer:WaitForChild("Backpack")
@@ -75,20 +185,56 @@ MainTab:CreateButton("Desync", function()
     end
 end)
 
-MainTab:CreateButton("Help tools", function()
+createButton("INF JUMP", UDim2.new(0, 0, 0, 45), function()
+    -- Infinite jump code
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
     
+    UserInputService.JumpRequest:Connect(function()
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end)
+    print("Infinite Jump activated!")
 end)
 
-MainTab:CreateButton("Tween (might not work)", function()
-   
+createButton("STEAL FLOOR", UDim2.new(0, 0, 0, 90), function()
+    -- Add your steal floor functionality here
+    print("Steal Floor activated!")
 end)
 
--- Auto-execute Plot ESP on load
-task.spawn(function()
-    
+createButton("FLY TO BASE", UDim2.new(0, 0, 0, 135), function()
+    -- Add your fly to base functionality here
+    print("Fly to Base activated!")
 end)
 
--- Another auto-executing script
-task.spawn(function()
-    
+createButton("GO TO BEST", UDim2.new(0, 0, 0, 180), function()
+    -- Add your go to best functionality here
+    print("Go to Best activated!")
 end)
+
+-- Make GUI draggable
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+titleFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+print("Lennon Hub Style GUI loaded!")
