@@ -1,0 +1,94 @@
+-- Load Almighty UI
+local Almighty = loadstring(game:HttpGet("https://pastefy.app/PHJpZltN/raw"))()
+
+-- Create main window
+local Window = Almighty:CreateWindow({Title = "in progress"})
+local MainTab = Window:CreateTab("Main")
+
+-- Add buttons
+MainTab:CreateButton("Desync", function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local LocalPlayer = Players.LocalPlayer
+    local desyncActive = false
+    
+    local function enableMobileDesync()
+        local success, error = pcall(function()
+            local backpack = LocalPlayer:WaitForChild("Backpack")
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+            
+            local packages = ReplicatedStorage:WaitForChild("Packages", 5)
+            if not packages then warn("Packages not found") return false end
+            
+            local netFolder = packages:WaitForChild("Net", 5)
+            if not netFolder then warn("Net folder not found") return false end
+            
+            local useItemRemote = netFolder:WaitForChild("RE/UseItem", 5)
+            local teleportRemote = netFolder:WaitForChild("RE/QuantumCloner/OnTeleport", 5)
+            if not useItemRemote or not teleportRemote then warn("Remotes not found") return false end
+            
+            local toolNames = {"Quantum Cloner", "Brainrot", "brainrot"}
+            local tool
+            
+            for _, toolName in ipairs(toolNames) do
+                tool = backpack:FindFirstChild(toolName) or character:FindFirstChild(toolName)
+                if tool then break end
+            end
+            
+            if not tool then
+                for _, item in ipairs(backpack:GetChildren()) do
+                    if item:IsA("Tool") then tool=item break end
+                end
+            end
+            
+            if tool and tool.Parent==backpack then
+                humanoid:EquipTool(tool)
+                task.wait(0.5)
+            end
+            
+            if setfflag then setfflag("WorldStepMax", "-9999999999") end
+            task.wait(0.2)
+            
+            useItemRemote:FireServer()
+            task.wait(1)
+            
+            teleportRemote:FireServer()
+            task.wait(2)
+            
+            if setfflag then setfflag("WorldStepMax", "-1") end
+            return true
+        end)
+        
+        if not success then
+            warn("Error activating desync: " .. tostring(error))
+            return false
+        end
+        return success
+    end
+    
+    local success = enableMobileDesync()
+    if success then
+        print("Desync activated!")
+    else
+        print("Desync failed - check console for errors")
+    end
+end)
+
+MainTab:CreateButton("Help tools", function()
+    
+end)
+
+MainTab:CreateButton("Tween (might not work)", function()
+   
+end)
+
+-- Auto-execute Plot ESP on load
+task.spawn(function()
+    
+end)
+
+-- Another auto-executing script
+task.spawn(function()
+    
+end)
